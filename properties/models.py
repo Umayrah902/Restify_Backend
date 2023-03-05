@@ -61,14 +61,14 @@ class Property(models.Model):
 # model to create images for the properties - a property can have multiple images
 class Image_Properties(models.Model):
     image = models.ImageField(upload_to='properties_images/',null=False, blank=False)
-    property = models.ForeignKey(Properties, on_delete=models.CASCADE, null=True, related_name='images')
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, null=True, related_name='images')
 
 # model to create pricing for different date ranges
 class Date_Price_Properties(models.Model):
     start_date = models.DateField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
     pricing = models.FloatField(null=False, blank=False)
-    property = models.ForeignKey(Properties, on_delete=models.CASCADE, null=True, related_name='dates_prices')
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, null=True, related_name='dates_prices')
 
     # the same property have different pricing for the same start and end date together
     class Meta:
