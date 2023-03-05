@@ -37,7 +37,7 @@ def validate_min_choices(value):
     if len(value) < 0:
         raise ValidationError('You cannot have a negative number of choices.')
 
-class Properties(models.Model):
+class Property(models.Model):
     name = models.CharField(max_length=120, null=False, blank=False)
     address = AddressField()
     guest_num = models.IntegerField(null=False, blank=False)
@@ -59,12 +59,12 @@ class Properties(models.Model):
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, related_name='owner')
 
 # model to create images for the properties - a property can have multiple images
-class Images_Properties(models.Model):
+class Image_Properties(models.Model):
     image = models.ImageField(upload_to='properties_images/',null=False, blank=False)
     property = models.ForeignKey(Properties, on_delete=models.CASCADE, null=True, related_name='images')
 
 # model to create pricing for different date ranges
-class Dates_Prices_Properties(models.Model):
+class Date_Price_Properties(models.Model):
     start_date = models.DateField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
     pricing = models.FloatField(null=False, blank=False)
