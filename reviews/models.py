@@ -10,9 +10,9 @@ class Rating(models.Model):
     rating_num = models.FloatField(validators=[MinValueValidator(0.5), MaxValueValidator(5.0)], null=True, blank=True)
     reviewer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
+    rating_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    rating_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('rating_type', 'rating_id')
 
     # Use GenericForeignKey:
         # - Host leaves rating on client (CustomUser) who has completed reservation 
@@ -22,9 +22,9 @@ class Comment(models.Model):
     comment_text = models.TextField(max_length=500, null=False, blank=False)
     reviewer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
+    comment_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    comment_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('comment_type', 'comment_id')
 
     # Use GenericForeignKey:
         # - Host leave comment on client (CustomUser) who has completed reservation 

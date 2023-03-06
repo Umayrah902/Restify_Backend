@@ -4,13 +4,13 @@ from .models import Rating
 from .models import Comment
 
 class RatingAdmin(admin.ModelAdmin):
-    fields = ['rating_num', 'reviewer', 'content_type', 'object_id', 'content_object']
+    fields = ['rating_num', 'reviewer', 'rating_type', 'rating_id', 'content_object']
     readonly_fields = ['content_object']
     class Meta:
         model = Rating
 
 class CommentAdmin(admin.ModelAdmin):
-    fields = ['comment_text', 'reviewer', 'content_type', 'object_id', 'content_object']
+    fields = ['comment_text', 'reviewer', 'comment_type', 'comment_id', 'content_object']
     readonly_fields = ['content_object']
     class Meta:
         model = Comment

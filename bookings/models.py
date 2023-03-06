@@ -43,6 +43,8 @@ class Booking(models.Model):
     property_booking = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True, related_name='property_book')
     billing_address = AddressField()
     contact_info = ContactInfo()
+    start_date = models.DateField(null=False, blank=False)
+    end_date = models.DateField(null=False, blank=False)
     STATES_OPTIONS = [
         ('Pending', 'Pending'),
         ('Denied', 'Denied'),
