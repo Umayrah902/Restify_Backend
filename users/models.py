@@ -19,7 +19,7 @@ class CustomUser(AbstractBaseUser):
     first_name = models.CharField(max_length=120)
     last_name = models.CharField(max_length=120)
     email = models.EmailField(unique=True)
-    avatar = models.ImageField(upload_to='avatars/')
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     phone_number = models.CharField(max_length=20)
     password = models.CharField(max_length=128)
 
