@@ -5,6 +5,7 @@ from users.models import CustomUser
 
 class notifications(models.Model):
     recipient = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    details = models.TextField(max_length=255, null=False, blank=False)
 
     notification_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     notification_id = models.PositiveIntegerField()

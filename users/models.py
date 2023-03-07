@@ -11,7 +11,7 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, first_name=None, last_name=None, email=None, avatar = None, phone_number=None, password=None, **extra_fields):
+    def create_hostuser(self, first_name=None, last_name=None, email=None, avatar = None, phone_number=None, password=None, **extra_fields):
         extra_fields.setdefault('is_host', True)
         return self.create_user(first_name=first_name, last_name=last_name, email=email, avatar=avatar, phone_number=phone_number, password=password,**extra_fields)
 
