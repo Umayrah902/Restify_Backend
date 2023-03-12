@@ -5,11 +5,17 @@ from rest_framework.views import APIView
 from .serializer import NotificationSerializer, ReadNotificationSerializer
 from .models import notifications
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+
+class NotificationPagination(PageNumberPagination):
+    page_size = 5
 
 #view for viewing notifications
 class MyNotificationsView(ListAPIView):
     permission_classes =[IsAuthenticated]
     serializer_class = NotificationSerializer
+    pagination_class = NotificationPagination
+
     def get_queryset(self):
         return notifications.objects.filter(recipient=self.request.user)
 
