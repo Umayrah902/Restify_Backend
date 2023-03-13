@@ -6,6 +6,7 @@ from .serializer import NotificationSerializer, ReadNotificationSerializer
 from .models import notifications
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import status
 
 class NotificationPagination(PageNumberPagination):
     page_size = 5
@@ -17,7 +18,14 @@ class MyNotificationsView(ListAPIView):
     pagination_class = NotificationPagination
 
     def get_queryset(self):
-        return notifications.objects.filter(recipient=self.request.user)
+        try:
+              notification_object = notifications.objects.filter(read=True)
+        except notifications.DoesNotExist:
+              return Response({"error": "Notification not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+              notification_object.delete()
+        
+        return notifications.objects.filter(recipient=self.request.user, read=False)
 
 #view for reading notifications
 class ReadNotificationsView(APIView):
@@ -28,13 +36,13 @@ class ReadNotificationsView(APIView):
         notifs = notifications.objects.filter(recipient=self.request.user)
         num_notifications = len(notifs)
         if n > 0 and n <= num_notifications:
+            notification_object = notifs[n-1]
+            notification_object.read = True
+            notification_object.save()
             return Response(self.serializer_class(notifs[n-1]).data)
         else:
-            return Response({'error': 'Invalid notification index'}, status=400)
+            return Response({'error': 'Invalid notification index'}, status=status.HTTP_404_NOT_FOUND)
 
-    #once I am done reading, I somehow want to change the status so that it is seen as read, and can therefore delete
-
-#view for deleting notifications (after you read one)
 
 
 
