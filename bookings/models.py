@@ -45,6 +45,7 @@ class Booking(models.Model):
     contact_info = ContactInfo()
     start_date = models.DateField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
+    invoice_cost = models.IntegerField(null=False, blank=False)
     STATES_OPTIONS = [
         ('Pending', 'Pending'),
         ('Denied', 'Denied'),

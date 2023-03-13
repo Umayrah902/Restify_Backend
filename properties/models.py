@@ -3,6 +3,7 @@ from django.db import models
 from multiselectfield import MultiSelectField
 from users.models import CustomUser
 from django.core.exceptions import ValidationError
+from datetime import datetime
 
 class AddressField(models.Field):
     def __init__(self, *args, **kwargs):
@@ -39,8 +40,13 @@ def validate_min_choices(value):
 
 class Property(models.Model):
     name = models.CharField(max_length=120, null=False, blank=False)
-    address = AddressField()
-    guest_num = models.IntegerField(null=False, blank=False)
+    # address = AddressField()
+    address_string = models.CharField(max_length=255, null=False, blank=False)
+    address_city = models.CharField(max_length=255, null=False, blank=False)
+    address_country = models.CharField(max_length=255, null=False, blank=False)
+    address_province = models.CharField(max_length=255, null=True, blank=True)
+    address_postal_code = models.CharField(max_length=10, null=True, blank=True)
+    guest_num = models.IntegerField(null=False, blank=True)
     AMENITIES_CHOICES = (
     ('Wifi', 'Wifi'),
     ('Kitchen', 'Kitchen'),
@@ -53,10 +59,22 @@ class Property(models.Model):
     ('Free Cancellation Within 48 hours', 'Free Cancellation Within 48 hours'),
     ('Free Cancellation Within one week', 'Free Cancellation Within one week'),
     )
-    amenities = MultiSelectField(choices=AMENITIES_CHOICES, validators=[validate_min_choices])
+    amenities = MultiSelectField(choices=AMENITIES_CHOICES)
     description = models.TextField(max_length=500, null=False, blank=False)
-    thumbnail_img = models.ImageField(upload_to='properties_thumbnails/', null=False, blank=False)
+    thumbnail_img = models.ImageField(upload_to='properties_thumbnails/', null=True, blank=True)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, related_name='owner')
+
+    @property
+    def current_price(self):
+        if self.dates_prices.all():
+            return self.dates_prices.filter(start_date__gte=datetime.today(), end_date__lt=datetime.today())[0].pricing
+        return 0
+
+
+    @property
+    def image_gallery(self):
+        if self.images.all():
+            return self.images.all()
 
 # model to create images for the properties - a property can have multiple images
 class Image_Properties(models.Model):
