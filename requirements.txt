@@ -4,3 +4,4 @@ djangorestframework-simplejwt
 requests
 django-cors-headers
 django-multiselectfield
+django-filter
