@@ -51,3 +51,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('rating_num', 'comment_text', 'reviewer')
     
+    def create(self, validated_data):
+        review = Comment(**validated_data)
+        return review
+
+

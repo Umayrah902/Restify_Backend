@@ -239,6 +239,15 @@ class PropertyReviewsView(APIView):
 
 class PropertyReviewAddView(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request):
+    def post(self, request, pk):
+        property_gotten = Property.objects.get(pk=pk)
+        if property_gotten:
+            #create a comment object, check if that user has posted a non follow up comment yet
+            #if they have not, (0 comments) and they completed/terminated reservation, then they
+            #are allowed to comment, else raise an HTTP error
+            
+            pass
+        else:
+            return Response(status=HTTP_404_NOT_FOUND)
 
         return None
