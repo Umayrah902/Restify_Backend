@@ -9,8 +9,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import filters as rest_filters
 from django_filters import rest_framework as filters
-from .serializer import PropertySerializer, ImagesSerializer, PriceSerializer
+from .serializer import PropertySerializer, ImagesSerializer, PriceSerializer, ReviewSerializer
 from .models import Property, Image_Properties, Date_Price_Properties
+from reviews.models import Comment
+from django.contrib.contenttypes.models import ContentType
+from rest_framework.pagination import PageNumberPagination
 # Create your views here.
 class PropertyInfoFetchView(generics.ListAPIView):
     serializer_class = PropertySerializer
@@ -217,11 +220,25 @@ class PropertyBookView(APIView):
     def post(self, request, pk):
         return None
 
+
 class PropertyReviewsView(APIView):
-    def post(self, request):
-        return None
+    def get(self, request, pk):
+        property_gotten = Property.objects.get(pk=pk)
+        if property_gotten:
+            property_ct = ContentType.objects.get_for_model(Property)
+            comments = Comment.objects.filter(Q(comment_type=property_ct, comment_id=pk))
+
+            paginator = PageNumberPagination()
+            paginator.page_size = 5
+            paginated_comments = paginator.paginate_queryset(comments, request)
+
+            serializer = ReviewSerializer(paginated_comments, many=True)
+            return paginator.get_paginated_response(serializer.data)
+        else:
+            return Response(status=HTTP_404_NOT_FOUND)
 
 class PropertyReviewAddView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
+
         return None

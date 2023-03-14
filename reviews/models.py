@@ -19,6 +19,7 @@ class Rating(models.Model):
         # - Client leaves rating on properties (Property) where they have terminated or completed booking
 
 class Comment(models.Model):
+    rating_num = models.FloatField(validators=[MinValueValidator(0.5), MaxValueValidator(5.0)], null=True, blank=True)
     comment_text = models.TextField(max_length=500, null=False, blank=False)
     reviewer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
 
