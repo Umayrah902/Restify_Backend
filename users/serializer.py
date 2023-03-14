@@ -19,3 +19,9 @@ class UserSerializer(serializers.ModelSerializer):
         )
         return user
 
+class UserSerializerProfile(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'phone_number', 'email', 'password', 'is_host', 'avatar')
