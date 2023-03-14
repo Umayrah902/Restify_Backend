@@ -323,8 +323,35 @@ class PropertyReviewsView(APIView):
         else:
             return Response(status=HTTP_404_NOT_FOUND)
 
+#this is for a non-followup review/comment
 class PropertyReviewAddView(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request):
+    def post(self, request, pk):
+        property_gotten = Property.objects.get(pk=pk)
+        if property_gotten:
+            try:
+                #we need to check if this user has commented before on this property or if they are property owner
+                #we also need to check if they completed or terminated reservation on this property before
+                type_of_object = ContentType.objects.get_for_model(Property)
+                existing_comment = Comment.objects.filter(reviewer=request.user, comment_type=type_of_object, comment_id=pk).exists()
 
-        return None
+                if not existing_comment:
+                    rating_num = request.data['rating_num']
+                    comment_text = request.data['comment_text']
+                    reviewer = request.user
+                    comment_type = type_of_object
+                    comment_id = pk
+                    property_review = Comment.objects.create(rating_num=rating_num,
+                                            comment_text=comment_text,
+                                            reviewer=reviewer,
+                                            comment_type=comment_type,
+                                            comment_id=comment_id)
+                    serializer = ReviewSerializer(property_review)
+                    return Response(serializer.data, status=HTTP_200_OK)
+                else:
+                    return Response("You already commented on this property!", status=HTTP_400_BAD_REQUEST)
+                
+            except KeyError:
+                return Response("Missing Fields in Request", status=HTTP_400_BAD_REQUEST)
+        else:
+            return Response(status=HTTP_404_NOT_FOUND)
