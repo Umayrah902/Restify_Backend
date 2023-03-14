@@ -22,7 +22,7 @@ class Comment(models.Model):
     rating_num = models.FloatField(validators=[MinValueValidator(0.5), MaxValueValidator(5.0)], null=True, blank=True)
     comment_text = models.TextField(max_length=500, null=False, blank=False)
     reviewer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
-
+    is_followup = models.BooleanField(default=False)
     comment_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     comment_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('comment_type', 'comment_id')
