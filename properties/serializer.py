@@ -1,4 +1,5 @@
 from .models import Property, Image_Properties, Date_Price_Properties
+from reviews.models import Comment
 from rest_framework import serializers
 
 
@@ -43,3 +44,10 @@ class PriceSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
+
+class ReviewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comment
+        fields = ('rating_num', 'comment_text', 'reviewer')
+    
