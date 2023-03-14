@@ -41,8 +41,17 @@ class Booking(models.Model):
     client = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='client')
     # allowing property to be null in the case that client is not null 
     property_booking = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True, related_name='property_book')
-    billing_address = AddressField()
-    contact_info = ContactInfo()
+    # billing_address = AddressField()
+    # contact_info = ContactInfo()
+    billing_address_string = models.CharField(max_length=255, null=False, blank=False)
+    billing_address_city = models.CharField(max_length=255, null=False, blank=False)
+    billing_address_country = models.CharField(max_length=255, null=False, blank=False)
+    billing_address_province = models.CharField(max_length=255, null=True, blank=True)
+    billing_address_postal_code = models.CharField(max_length=10, null=True, blank=True)
+    # contact_info_first_name = models.CharField(max_length=120, null=False, blank=False)
+    # contact_info_last_name = models.CharField(max_length=120, null=False, blank=False)
+    # contact_info_email = models.EmailField()
+    # ccontact_info_phone_number = models.CharField(max_length=20)
     start_date = models.DateField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
     invoice_cost = models.IntegerField(null=False, blank=False)
@@ -51,9 +60,9 @@ class Booking(models.Model):
         ('Denied', 'Denied'),
         ('Expired', 'Expired'),
         ('Approved', 'Approved'),
-        ('Canceled', 'Canceled'),
+        ('Cancelled', 'Cancelled'),
         ('Terminated', 'Terminated'),
         ('Completed ', 'Completed'),
     ]
-    state = models.CharField(max_length=50, choices=STATES_OPTIONS, default='Pending', editable=False, validators=[validate_state])
+    state = models.CharField(max_length=50, choices=STATES_OPTIONS, default='Pending', validators=[validate_state])
     
