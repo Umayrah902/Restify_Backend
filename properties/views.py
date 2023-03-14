@@ -15,6 +15,7 @@ from bookings.models import Booking
 from .serializer import PropertySerializer, ImagesSerializer, PriceSerializer
 from .models import Property, Image_Properties, Date_Price_Properties
 from reviews.models import Comment
+from bookings.models import Booking
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.pagination import PageNumberPagination
 # Create your views here.
@@ -334,8 +335,8 @@ class PropertyReviewAddView(APIView):
                 #we also need to check if they completed or terminated reservation on this property before
                 type_of_object = ContentType.objects.get_for_model(Property)
                 existing_comment = Comment.objects.filter(reviewer=request.user, comment_type=type_of_object, comment_id=pk).exists()
-
-                if not existing_comment:
+                booking_status = Booking.objects.filter(client=request.user, property_booking=property_gotten, state__in=['Terminated', 'Completed']).exists()
+                if not existing_comment and booking_status and property_gotten.owner != request.user:
                     rating_num = request.data['rating_num']
                     comment_text = request.data['comment_text']
                     reviewer = request.user
@@ -349,7 +350,8 @@ class PropertyReviewAddView(APIView):
                     serializer = ReviewSerializer(property_review)
                     return Response(serializer.data, status=HTTP_200_OK)
                 else:
-                    return Response("You already commented on this property!", status=HTTP_400_BAD_REQUEST)
+                    return Response("You cannot comment: You either already commented on this property, have not terminated or completed this property, or are the property owner", 
+                    status=HTTP_400_BAD_REQUEST)
                 
             except KeyError:
                 return Response("Missing Fields in Request", status=HTTP_400_BAD_REQUEST)
