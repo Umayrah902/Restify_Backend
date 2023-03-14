@@ -62,7 +62,7 @@ class Booking(models.Model):
         ('Approved', 'Approved'),
         ('Cancelled', 'Cancelled'),
         ('Terminated', 'Terminated'),
-        ('Completed ', 'Completed'),
+        ('Completed', 'Completed'),
     ]
     state = models.CharField(max_length=50, choices=STATES_OPTIONS, default='Pending', validators=[validate_state])
     
