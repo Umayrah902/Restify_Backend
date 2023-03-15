@@ -75,8 +75,8 @@ class UserViewPublicProfile(generics.RetrieveAPIView):
     serializer_class = UserSerializerPublicProfile
     permission_classes = [IsAuthenticated]
 
-#     def get_object(self):
-#         return self.request.user
+    def get_object(self):
+        return self.request.user
 
 
 #see all the users who have reservations/bookings on your property
@@ -148,9 +148,4 @@ class GuestPostReviewView(APIView):
 
         else:
             return Response({'error': 'This user has not reserved any of your properties'}, status=status.HTTP_404_NOT_FOUND)
-
-
-    def get_object(self):
-        email = self.kwargs['email']
-        return CustomUser.objects.get(email=email)
 
