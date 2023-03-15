@@ -20,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
         )
         return user
 
+
 class GuestSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -33,3 +34,19 @@ class GuestReviewsSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         review = Comment(**validated_data)
         return review
+
+class UserSerializerProfile(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    avatar = serializers.ImageField(max_length=None, use_url=True, required=False)
+
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'phone_number', 'email', 'password', 'is_host', 'avatar')
+
+class UserSerializerPublicProfile(serializers.ModelSerializer):
+    avatar = serializers.ImageField(max_length=None, use_url=True, required=False)
+
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'email', 'is_host', 'avatar')
+
