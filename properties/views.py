@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import filters as rest_filters
 from django_filters import rest_framework as filters
-from .serializer import PropertySerializer, ImagesSerializer, PriceSerializer, ReviewSerializer
+from .serializer import PropertySerializer, ImagesSerializer, PriceSerializer, ReviewSerializer, PropertyReplySerializer
 from bookings.serializer import BookingSerializer
 from bookings.models import Booking
 from .serializer import PropertySerializer, ImagesSerializer, PriceSerializer
@@ -357,3 +357,87 @@ class PropertyReviewAddView(APIView):
                 return Response("Missing Fields in Request", status=HTTP_400_BAD_REQUEST)
         else:
             return Response(status=HTTP_404_NOT_FOUND)
+
+
+#view for follow-up messages
+class PropertyReviewThreadView(APIView):
+    serializer_class = PropertyReplySerializer
+    def get(self, request, pk, n):
+        property_gotten = Property.objects.get(pk=pk)
+        if property_gotten:
+            property_ct = ContentType.objects.get_for_model(Property)
+            property_reviews = Comment.objects.filter(Q(comment_type=property_ct, comment_id=pk))
+            num_reviews = len(property_reviews)
+            if n > 0 and n <= num_reviews:
+                review_object = property_reviews[n-1]
+                owner_reply = review_object.owner_reply
+                your_reply = review_object.your_reply
+                replies = []
+                if owner_reply:
+                    replies.append(owner_reply)
+                if your_reply:
+                    replies.append(owner_reply)  
+                return Response(self.serializer_class(replies, many=True).data)
+            else:
+                return Response({'error': 'Invalid notification index'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(status=HTTP_404_NOT_FOUND)
+
+#reply to the comments
+class PropertyCommentReplyView(APIView):
+    serializer_class = PropertyReplySerializer
+    def post(self, request, pk, n):
+        property_gotten = Property.objects.get(pk=pk)
+        if property_gotten:
+            try:
+                property_ct = ContentType.objects.get_for_model(Property)
+                property_reviews = Comment.objects.filter(Q(comment_type=property_ct, comment_id=pk))
+                num_reviews = len(property_reviews)
+                if n > 0 and n <= num_reviews:
+                    review_object = property_reviews[n-1]
+                    owner_reply = review_object.owner_reply
+                    your_reply = review_object.your_reply
+                    replies = []
+                    if not owner_reply and not your_reply and request.user == property_gotten.owner:
+                        comment_ct = ContentType.objects.get_for_model(Comment)
+                        comment_text = request.data['comment_text']
+                        reviewer = request.user
+                        comment_type = comment_ct
+                        comment_id = review_object.id
+                        property_review = Comment.objects.create(
+                                                comment_text=comment_text,
+                                                reviewer=reviewer,
+                                                comment_type=comment_type,
+                                                comment_id=comment_id)
+                        
+                        review_object.owner_reply = property_review
+                        review_object.save()
+                        replies.append(property_review)
+                    elif owner_reply and not your_reply and request.user != property_gotten.owner and review_object.reviewer == request.user:
+                        comment_ct = ContentType.objects.get_for_model(Comment)
+                        comment_text = request.data['comment_text']
+                        reviewer = request.user
+                        comment_type = comment_ct
+                        comment_id = review_object.id
+                        property_review = Comment.objects.create(
+                                                comment_text=comment_text,
+                                                reviewer=reviewer,
+                                                comment_type=comment_type,
+                                                comment_id=comment_id)
+                        review_object.your_reply = property_review
+                        review_object.save()
+                        replies.append(property_review)
+                    else:
+                        return Response({'error': 'You cannot reply'}, status=status.HTTP_400_BAD_REQUEST)
+
+                    return Response(self.serializer_class(replies, many=True).data)
+                else:
+                    return Response({'error': 'Invalid notification index'}, status=status.HTTP_404_NOT_FOUND)
+
+            except KeyError:
+                return Response("Missing Fields in Request", status=HTTP_400_BAD_REQUEST)
+
+        else:
+            return Response(status=HTTP_404_NOT_FOUND)
+
+

@@ -26,6 +26,8 @@ class Comment(models.Model):
     comment_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     comment_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('comment_type', 'comment_id')
+    your_reply = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies_to_your_comments')
+    owner_reply = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies_to_owner_comments')
 
     # Use GenericForeignKey:
         # - Host leave comment on client (CustomUser) who has completed reservation 

@@ -55,4 +55,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         review = Comment(**validated_data)
         return review
 
-
+#serializer for the replies to comments
+class PropertyReplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('comment_text', 'reviewer')
+    
+    def create(self, validated_data):
+        review = Comment(**validated_data)
+        return review
