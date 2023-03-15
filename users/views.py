@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from .serializer import UserSerializer, UserSerializerProfile
+from rest_framework import status, generics
+from .serializer import UserSerializer, UserSerializerProfile, UserSerializerPublicProfile
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.hashers import make_password
+from .models import CustomUser
 
 class UserSignupView(APIView):
     def post(self, request):
@@ -14,7 +15,7 @@ class UserSignupView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class UserEditProfileView(APIView):
-    serializer_class = UserSerializer
+    serializer_class = UserSerializerProfile
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
@@ -27,7 +28,7 @@ class UserEditProfileView(APIView):
             phone_number = serializer.validated_data.get('phone_number')
             password = serializer.validated_data.get('password')
             email = serializer.validated_data.get('email')
-            avatar = serializer.validated_data.get('avatar')
+            avatar = request.FILES.get('avatar')
             if first_name:
                 user.first_name = first_name
             if last_name:
@@ -44,3 +45,31 @@ class UserEditProfileView(APIView):
             user.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserViewMyProfile(generics.RetrieveAPIView):
+    serializer_class = UserSerializerProfile
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+class UserDeleteAvatarView(generics.UpdateAPIView):
+    serializer_class = UserSerializerProfile
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        serializer = self.serializer_class(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            user.avatar = None
+            user.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserViewPublicProfile(generics.RetrieveAPIView):
+    serializer_class = UserSerializerPublicProfile
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        email = self.kwargs['email']
+        return CustomUser.objects.get(email=email)
