@@ -14,5 +14,7 @@ urlpatterns = [
     path('<int:pk>/bookings/', PropertyBookingsView.as_view(), name='property_bookings_view'),
     path('<int:pk>/book/', PropertyBookView.as_view(), name='property_book_view'),
     path('<int:pk>/reviews/', PropertyReviewsView.as_view(), name='property_reviews_view'),
-    path('<int:pk>/review/', PropertyReviewAddView.as_view(), name='property_add_review_view'),
+    path('<int:pk>/review/', PropertyReviewAddView.as_view(), name='property_review_add_view'),
+    path('<int:pk>/reviews/<int:n>/', PropertyReviewThreadView.as_view(), name='property_review_thread_view'),
+    path('<int:pk>/reviews/<int:n>/reply/', PropertyCommentReplyView.as_view(), name='property_comment_reply_view')
 ]
