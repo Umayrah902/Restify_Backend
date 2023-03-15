@@ -376,7 +376,7 @@ class PropertyReviewThreadView(APIView):
                 if owner_reply:
                     replies.append(owner_reply)
                 if your_reply:
-                    replies.append(owner_reply)  
+                    replies.append(your_reply)  
                 return Response(self.serializer_class(replies, many=True).data)
             else:
                 return Response({'error': 'Invalid notification index'}, status=status.HTTP_404_NOT_FOUND)
