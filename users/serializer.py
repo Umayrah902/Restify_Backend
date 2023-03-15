@@ -1,4 +1,5 @@
 from .models import CustomUser
+from reviews.models import Comment
 from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
@@ -19,3 +20,16 @@ class UserSerializer(serializers.ModelSerializer):
         )
         return user
 
+class GuestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('id','first_name', 'last_name', 'phone_number', 'email')
+
+class GuestReviewsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('rating_num', 'comment_text', 'reviewer')
+    
+    def create(self, validated_data):
+        review = Comment(**validated_data)
+        return review
