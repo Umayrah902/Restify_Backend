@@ -1,8 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from .serializer import UserSerializer
-
+from rest_framework import status, generics
+from .serializer import UserSerializer, UserSerializerProfile, UserSerializerPublicProfile
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.hashers import make_password
+from .models import CustomUser
 
 class UserSignupView(APIView):
     def post(self, request):
@@ -12,10 +14,62 @@ class UserSignupView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    
-# class UserEditProfileView(generics.RetrieveUpdateAPIView):
-#     serializer_class = UserSerializer
-#     permission_classes = (IsAuthenticated,)
+class UserEditProfileView(APIView):
+    serializer_class = UserSerializerProfile
+    permission_classes = [IsAuthenticated]
 
-#     def get_object(self):
-#         return self.request.user
+    def put(self, request):
+        user = request.user
+        serializer = self.serializer_class(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            first_name = serializer.validated_data.get('first_name')
+            last_name = serializer.validated_data.get('last_name')
+            phone_number = serializer.validated_data.get('phone_number')
+            password = serializer.validated_data.get('password')
+            email = serializer.validated_data.get('email')
+            avatar = request.FILES.get('avatar')
+            if first_name:
+                user.first_name = first_name
+            if last_name:
+                user.last_name = last_name
+            if phone_number:
+                user.phone_number = phone_number
+            if password:
+                user.password = make_password(password)
+            if email:
+                user.email = email
+            if avatar:
+                user.avatar = avatar
+            user.is_host = serializer.validated_data.get('is_host', user.is_host)
+            user.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserViewMyProfile(generics.RetrieveAPIView):
+    serializer_class = UserSerializerProfile
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+class UserDeleteAvatarView(generics.UpdateAPIView):
+    serializer_class = UserSerializerProfile
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        serializer = self.serializer_class(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            user.avatar = None
+            user.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserViewPublicProfile(generics.RetrieveAPIView):
+    serializer_class = UserSerializerPublicProfile
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        email = self.kwargs['email']
+        return CustomUser.objects.get(email=email)
