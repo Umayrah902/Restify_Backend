@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import *
 from rest_framework.views import APIView
@@ -12,11 +13,17 @@ from django_filters import rest_framework as filters
 
 from bookings.serializer import BookingSerializer
 from bookings.models import Booking
+from notifications.models import notifications
 from .serializer import PropertySerializer, ImagesSerializer, PriceSerializer
 from .models import Property, Image_Properties, Date_Price_Properties
 # Create your views here.
+
+class PropertyPagination(PageNumberPagination):
+    page_size = 9
+
 class PropertyInfoFetchView(generics.ListAPIView):
     serializer_class = PropertySerializer
+    pagination_class = PropertyPagination
     queryset = Property.objects.all()
     filter_backends = [filters.DjangoFilterBackend, rest_filters.OrderingFilter, rest_filters.SearchFilter, ]
     filterset_fields = ['address_city', 'address_province', 'address_country', 'name', 'guest_num', ]
@@ -268,6 +275,20 @@ class PropertyBookView(APIView):
                                          state=state
                                         )
 
+            user_notif = notifications.objects.create(
+                recipient=request.user,
+                details=f"Booking Submitted for Property: {property_gotten.name}, Pending Review.",
+                notification_type=Booking,
+                notification_id=obj.pk
+            )
+
+            owner_notif = notifications.objects.create(
+                recipient=property_gotten.owner,
+                details=f"Somebody Booked Your Property: {property_gotten.name}.",
+                notification_type=Booking,
+                notification_id=obj.pk
+            )
+
             serializer = BookingSerializer(obj)
             # return Response(srlz.data, status=HTTP_201_CREATED)
             return Response(serializer.data, status=HTTP_201_CREATED)
@@ -296,6 +317,12 @@ class PropertyBookView(APIView):
             if booking.property_booking.owner != request.user:
                 return Response(status=HTTP_401_UNAUTHORIZED)
             booking.delete()
+            user_notif = notifications.objects.create(
+                recipient=booking.client,
+                details=f"The host has cancelled your booking for the property: {property_gotten.name}.",
+                notification_type=Booking,
+                notification_id=booking_pk
+            )
 
             return Response(status=HTTP_200_OK)
         except KeyError:
