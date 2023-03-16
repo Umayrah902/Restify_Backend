@@ -34,12 +34,14 @@ class ReadNotificationsView(APIView):
 
     def get(self, request, n):
         notifs = notifications.objects.filter(recipient=self.request.user)
-        num_notifications = len(notifs)
-        if n > 0 and n <= num_notifications:
-            notification_object = notifs[n-1]
+        notif_id_set = set()
+        for notif in notifs:
+            notif_id_set.add(notif.id)
+        if n in notif_id_set:
+            notification_object = notifications.objects.get(id=n)
             notification_object.read = True
             notification_object.save()
-            return Response(self.serializer_class(notifs[n-1]).data)
+            return Response(self.serializer_class(notification_object).data)
         else:
             return Response({'error': 'Invalid notification index'}, status=status.HTTP_404_NOT_FOUND)
 

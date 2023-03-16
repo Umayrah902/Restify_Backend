@@ -394,9 +394,11 @@ class PropertyReviewThreadView(APIView):
         if property_gotten:
             property_ct = ContentType.objects.get_for_model(Property)
             property_reviews = Comment.objects.filter(Q(comment_type=property_ct, comment_id=pk))
-            num_reviews = len(property_reviews)
-            if n > 0 and n <= num_reviews:
-                review_object = property_reviews[n-1]
+            comment_id_set = set()
+            for reviews in property_reviews:
+                comment_id_set.add(reviews.id)
+            if n in comment_id_set:
+                review_object = Comment.objects.get(id=n)
                 owner_reply = review_object.owner_reply
                 your_reply = review_object.your_reply
                 replies = []
@@ -419,9 +421,11 @@ class PropertyCommentReplyView(APIView):
             try:
                 property_ct = ContentType.objects.get_for_model(Property)
                 property_reviews = Comment.objects.filter(Q(comment_type=property_ct, comment_id=pk))
-                num_reviews = len(property_reviews)
-                if n > 0 and n <= num_reviews:
-                    review_object = property_reviews[n-1]
+                comment_id_set = set()
+                for reviews in property_reviews:
+                    comment_id_set.add(reviews.id)
+                if n in comment_id_set:
+                    review_object = Comment.objects.get(id=n)
                     owner_reply = review_object.owner_reply
                     your_reply = review_object.your_reply
                     replies = []
