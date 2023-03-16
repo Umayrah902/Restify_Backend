@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.status import *
 
 from .models import Booking
+from notifications.models import notifications
 from .serializer import BookingSerializer
 # Create your views here.
 class BookingsDetailView(APIView):
@@ -51,6 +52,13 @@ class BookingEditView(APIView):
             currbooking.invoice_cost = invoice_cost
             currbooking.state = state
             currbooking.save()
+
+            user_notif = notifications.objects.create(
+                recipient=currbooking.client,
+                details=f"The state of booking No.{currbooking.pk} has changed: {currbooking.state}.",
+                notification_type=Booking,
+                notification_id=currbooking.pk
+            )
 
             serializer = BookingSerializer(currbooking)
             return Response(serializer.data, status=HTTP_200_OK)

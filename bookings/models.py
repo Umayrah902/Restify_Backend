@@ -4,6 +4,7 @@ from properties.models import Property
 from properties.models import AddressField
 from django.core.exceptions import ValidationError
 
+
 class ContactInfo(models.Field):
     def __init__(self, *args, **kwargs):
         self.first_name = models.CharField(max_length=120,null=False, blank=False)
@@ -35,6 +36,7 @@ class ContactInfo(models.Field):
 def validate_state(value):
     if value not in dict(Booking.STATES_OPTIONS):
         raise ValidationError('Invalid state')
+
 
 class Booking(models.Model):
     # allowing client to be null in the case that property is not null 
