@@ -417,6 +417,7 @@ class PropertyReviewThreadView(APIView):
 
 #reply to the comments
 class PropertyCommentReplyView(APIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = PropertyReplySerializer
     def post(self, request, pk, n):
         property_gotten = Property.objects.get(pk=pk)
