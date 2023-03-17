@@ -278,18 +278,20 @@ class PropertyBookView(APIView):
                                          invoice_cost=invoice_cost,
                                          state=state
                                         )
+            
+            booking_ct = ContentType.objects.get_for_model(Booking)
 
             user_notif = notifications.objects.create(
                 recipient=request.user,
                 details=f"Booking Submitted for Property: {property_gotten.name}, Pending Review.",
-                notification_type=Booking,
+                notification_type=booking_ct,
                 notification_id=obj.pk
             )
 
             owner_notif = notifications.objects.create(
                 recipient=property_gotten.owner,
                 details=f"Somebody Booked Your Property: {property_gotten.name}.",
-                notification_type=Booking,
+                notification_type=booking_ct,
                 notification_id=obj.pk
             )
 
@@ -321,10 +323,11 @@ class PropertyBookView(APIView):
             if booking.property_booking.owner != request.user:
                 return Response(status=HTTP_401_UNAUTHORIZED)
             booking.delete()
+            booking_ct = ContentType.objects.get_for_model(Booking)
             user_notif = notifications.objects.create(
                 recipient=booking.client,
                 details=f"The host has cancelled your booking for the property: {property_gotten.name}.",
-                notification_type=Booking,
+                notification_type=booking_ct,
                 notification_id=booking_pk
             )
 
