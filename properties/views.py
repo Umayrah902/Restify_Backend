@@ -39,7 +39,7 @@ class PropertyInfoFetchView(generics.ListAPIView):
         queryfrom = self.request.query_params.get('from')
         queryto = self.request.query_params.get('to')
 
-        print(queryset)
+        # print(queryset)
 
         if queryfrom and queryto:
             conflicts = queryset.filter(property_book__end_date__gt=queryfrom, property_book__start_date__lt=queryto)
