@@ -25,6 +25,9 @@ from rest_framework.pagination import PageNumberPagination
 class PropertyPagination(PageNumberPagination):
     page_size = 9
 
+class BookingPagination(PageNumberPagination):
+    page_size = 15
+
 class PropertyInfoFetchView(generics.ListAPIView):
     serializer_class = PropertySerializer
     pagination_class = PropertyPagination
@@ -53,109 +56,129 @@ class PropertyInfoFetchView(generics.ListAPIView):
 
 class PropertyInfoFocusView(APIView):
     def get(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if property_gotten:
-            serializer = PropertySerializer(property_gotten)
-            return Response(serializer.data, status=HTTP_200_OK)
-        else:
+        try:
+            property_gotten = Property.objects.get(pk=pk)
+            if property_gotten:
+                serializer = PropertySerializer(property_gotten)
+                return Response(serializer.data, status=HTTP_200_OK)
+            else:
+                return Response(status=HTTP_404_NOT_FOUND)
+        except Exception:
             return Response(status=HTTP_404_NOT_FOUND)
 
 class PropertyAuxMediaView(APIView):
     def get(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if property_gotten:
-            aux_medias = Image_Properties.objects.filter(property=property_gotten)
-            # print(aux_medias)
-            if aux_medias:
-                imgserializer = ImagesSerializer(aux_medias, many=True)
-                return Response(imgserializer.data, status=HTTP_200_OK)
+        try:
+            property_gotten = Property.objects.get(pk=pk)
+            if property_gotten:
+                aux_medias = Image_Properties.objects.filter(property=property_gotten)
+                # print(aux_medias)
+                if aux_medias:
+                    imgserializer = ImagesSerializer(aux_medias, many=True)
+                    return Response(imgserializer.data, status=HTTP_200_OK)
+                else:
+                    return Response(status=HTTP_404_NOT_FOUND)
             else:
                 return Response(status=HTTP_404_NOT_FOUND)
-        else:
+        except Exception:
             return Response(status=HTTP_404_NOT_FOUND)
-
 class PropertyAuxMediaManageView(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if request.user.pk != property_gotten.owner.pk:
-            return Response(status=HTTP_403_FORBIDDEN)
+    def put(self, request, pk):
         try:
-            file = request.data['image']
-            obj = Image_Properties.objects.create(image=file, property=property_gotten)
-            srlz = ImagesSerializer(obj)
-            return Response(srlz.data, status=HTTP_201_CREATED)
-        except KeyError:
-            return Response(status=HTTP_400_BAD_REQUEST)
+            property_gotten = Property.objects.get(pk=pk)
+            if request.user.pk != property_gotten.owner.pk:
+                return Response(status=HTTP_403_FORBIDDEN)
+            try:
+                file = request.data['image']
+                obj = Image_Properties.objects.create(image=file, property=property_gotten)
+                srlz = ImagesSerializer(obj)
+                return Response(srlz.data, status=HTTP_201_CREATED)
+            except KeyError:
+                return Response(status=HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response(status=HTTP_404_NOT_FOUND)
 
     def delete(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if request.user.pk != property_gotten.owner.pk:
-            return Response(status=HTTP_403_FORBIDDEN)
         try:
-            pkdeleted = request.headers.get('to-delete')
-            img = Image_Properties.objects.get(pk=pkdeleted)
-            if img.property != property_gotten:
-                return Response(status=HTTP_401_UNAUTHORIZED)
-            img.delete()
-            return Response(status=HTTP_200_OK)
-        except KeyError:
-            return Response(status=HTTP_400_BAD_REQUEST)
+            property_gotten = Property.objects.get(pk=pk)
+            if request.user.pk != property_gotten.owner.pk:
+                return Response(status=HTTP_403_FORBIDDEN)
+            try:
+                pkdeleted = request.headers.get('to-delete')
+                img = Image_Properties.objects.get(pk=pkdeleted)
+                if img.property != property_gotten:
+                    return Response(status=HTTP_401_UNAUTHORIZED)
+                img.delete()
+                return Response(status=HTTP_200_OK)
+            except KeyError:
+                return Response(status=HTTP_400_BAD_REQUEST)
+            except Exception:
+                return Response(status=HTTP_404_NOT_FOUND)
         except Exception:
             return Response(status=HTTP_404_NOT_FOUND)
 
 class PropertyPricesView(APIView):
+
     def get(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if property_gotten:
-            prices = Date_Price_Properties.objects.filter(property=property_gotten)
-            if prices:
-                priceserializer = PriceSerializer(prices, many=True)
-                return Response(priceserializer.data, status=HTTP_200_OK)
+        try:
+            property_gotten = Property.objects.get(pk=pk)
+            if property_gotten:
+                prices = Date_Price_Properties.objects.filter(property=property_gotten)
+                if prices:
+                    priceserializer = PriceSerializer(prices, many=True)
+                    return Response(priceserializer.data, status=HTTP_200_OK)
+                else:
+                    return Response(status=HTTP_404_NOT_FOUND)
             else:
                 return Response(status=HTTP_404_NOT_FOUND)
-        else:
+        except Exception:
             return Response(status=HTTP_404_NOT_FOUND)
 
 class PropertyPricesManageView(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if request.user.pk != property_gotten.owner.pk:
-            return Response(status=HTTP_403_FORBIDDEN)
+    def put(self, request, pk):
         try:
-            start_date = request.data['start_date']
-            end_date = request.data['end_date']
-            price = request.data['pricing']
-            conflictings = Date_Price_Properties.objects.filter(Q(end_date__gt=start_date) |
-                                                                    Q(start_date__lt=end_date)).count()
-            if conflictings > 0:
-                return Response("Conflicting Schedule", status=HTTP_409_CONFLICT)
+            property_gotten = Property.objects.get(pk=pk)
+            if request.user.pk != property_gotten.owner.pk:
+                return Response(status=HTTP_403_FORBIDDEN)
+            try:
+                start_date = request.data['start_date']
+                end_date = request.data['end_date']
+                price = request.data['pricing']
+                conflictings = Date_Price_Properties.objects.filter(end_date__gt=start_date, start_date__lt=end_date).count()
+                if conflictings > 0:
+                    return Response("Conflicting Schedule", status=HTTP_409_CONFLICT)
 
-            obj = Date_Price_Properties.objects.create(start_date=start_date,
-                                            end_date=end_date,
-                                            pricing=price,
-                                            property=property_gotten
-                                            )
+                obj = Date_Price_Properties.objects.create(start_date=start_date,
+                                                end_date=end_date,
+                                                pricing=price,
+                                                property=property_gotten
+                                                )
 
-            srlz = PriceSerializer(obj)
-            return Response(srlz.data, status=HTTP_201_CREATED)
-        except KeyError:
-            return Response("Missing Fields in Request", status=HTTP_400_BAD_REQUEST)
+                srlz = PriceSerializer(obj)
+                return Response(srlz.data, status=HTTP_201_CREATED)
+            except KeyError:
+                return Response("Missing Fields in Request", status=HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response(status=HTTP_404_NOT_FOUND)
 
     def delete(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if request.user.pk != property_gotten.owner.pk:
-            return Response(status=HTTP_403_FORBIDDEN)
         try:
-            pkdeleted = request.headers.get('to-delete')
-            pricing = Date_Price_Properties.objects.get(pk=pkdeleted)
-            if pricing.property != property_gotten:
-                return Response(status=HTTP_401_UNAUTHORIZED)
-            pricing.delete()
-            return Response(status=HTTP_200_OK)
-        except KeyError:
-            return Response(status=HTTP_400_BAD_REQUEST)
+            property_gotten = Property.objects.get(pk=pk)
+            if request.user.pk != property_gotten.owner.pk:
+                return Response(status=HTTP_403_FORBIDDEN)
+            try:
+                pkdeleted = request.headers.get('to-delete')
+                pricing = Date_Price_Properties.objects.get(pk=pkdeleted)
+                if pricing.property != property_gotten:
+                    return Response(status=HTTP_401_UNAUTHORIZED)
+                pricing.delete()
+                return Response(status=HTTP_200_OK)
+            except KeyError:
+                return Response(status=HTTP_400_BAD_REQUEST)
+            except Exception:
+                return Response(status=HTTP_404_NOT_FOUND)
         except Exception:
             return Response(status=HTTP_404_NOT_FOUND)
 
@@ -198,44 +221,50 @@ class PropertyCreateView(APIView):
 class PropertyEditView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if request.user.pk != property_gotten.owner.pk:
-            return Response(status=HTTP_403_FORBIDDEN)
         try:
-            property_gotten.owner = request.user
-            property_gotten.property_name = request.data['name']
-            property_gotten.address_string = request.data['address_string']
-            property_gotten.address_city = request.data['address_city']
-            property_gotten.address_country = request.data['address_country']
-            property_gotten.address_province = request.data['address_province']
-            property_gotten.address_postal_code = request.data['address_postal_code']
-            property_gotten.guest_num = request.data['guest_num']
-            property_gotten.amenities = request.data['amenities']
-            property_gotten.description = request.data['description']
-            property_gotten.thumbnail_img = request.data['thumbnail_img']
-            property_gotten.save()
+            property_gotten = Property.objects.get(pk=pk)
+            if request.user.pk != property_gotten.owner.pk:
+                return Response(status=HTTP_403_FORBIDDEN)
+            try:
+                property_gotten.owner = request.user
+                property_gotten.property_name = request.data['name']
+                property_gotten.address_string = request.data['address_string']
+                property_gotten.address_city = request.data['address_city']
+                property_gotten.address_country = request.data['address_country']
+                property_gotten.address_province = request.data['address_province']
+                property_gotten.address_postal_code = request.data['address_postal_code']
+                property_gotten.guest_num = request.data['guest_num']
+                property_gotten.amenities = request.data['amenities']
+                property_gotten.description = request.data['description']
+                property_gotten.thumbnail_img = request.data['thumbnail_img']
+                property_gotten.save()
 
-            serializer = PropertySerializer(property_gotten)
+                serializer = PropertySerializer(property_gotten)
 
-            return Response(serializer.data, status=HTTP_200_OK)
-        except KeyError:
-            return Response("Missing Fields in Form.", status=HTTP_400_BAD_REQUEST)
+                return Response(serializer.data, status=HTTP_200_OK)
+            except KeyError:
+                return Response("Missing Fields in Form.", status=HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response(status=HTTP_404_NOT_FOUND)
 
     def delete(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if property_gotten is None:
-            return Response(status=HTTP_404_NOT_FOUND)
-        # print(property_gotten)
-        if request.user.pk != property_gotten.owner.pk:
-            return Response(status=HTTP_403_FORBIDDEN)
         try:
-            if property_gotten.owner != request.user:
-                return Response(status=HTTP_401_UNAUTHORIZED)
-            property_gotten.delete()
+            property_gotten = Property.objects.get(pk=pk)
+            if property_gotten is None:
+                return Response(status=HTTP_404_NOT_FOUND)
+            # print(property_gotten)
+            if request.user.pk != property_gotten.owner.pk:
+                return Response(status=HTTP_403_FORBIDDEN)
+            try:
+                if property_gotten.owner != request.user:
+                    return Response(status=HTTP_401_UNAUTHORIZED)
+                property_gotten.delete()
 
-            return Response(status=HTTP_200_OK)
-        except KeyError:
-            return Response(status=HTTP_400_BAD_REQUEST)
+                return Response(status=HTTP_200_OK)
+            except KeyError:
+                return Response(status=HTTP_400_BAD_REQUEST)
+            except Exception:
+                return Response(status=HTTP_404_NOT_FOUND)
         except Exception:
             return Response(status=HTTP_404_NOT_FOUND)
 
@@ -243,80 +272,87 @@ class PropertyEditView(APIView):
 class PropertyBookingsView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if property_gotten is None:
-            return Response(status=HTTP_404_NOT_FOUND)
-        if request.user.pk != property_gotten.owner.pk:
-            return Response(status=HTTP_403_FORBIDDEN)
         try:
-            booking = Booking.objects.filter(property_booking=property_gotten)
-            serializer = BookingSerializer(booking, many=True)
-            return Response(serializer.data, status=HTTP_200_OK)
+            property_gotten = Property.objects.get(pk=pk)
+            if property_gotten is None:
+                return Response(status=HTTP_404_NOT_FOUND)
+            if request.user.pk != property_gotten.owner.pk:
+                return Response(status=HTTP_403_FORBIDDEN)
+            try:
+                booking = Booking.objects.filter(property_booking=property_gotten)
+                serializer = BookingSerializer(booking, many=True)
+                return Response(serializer.data, status=HTTP_200_OK)
+            except Exception:
+                return Response("Malformed Request", status=HTTP_400_BAD_REQUEST)
         except Exception:
-            return Response("Malformed Request", status=HTTP_400_BAD_REQUEST)
+            return Response(status=HTTP_404_NOT_FOUND)
 
 
 class PropertyBookView(APIView):
     permission_classes = [IsAuthenticated]
     def put(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if property_gotten is None:
-            return Response(status=HTTP_404_NOT_FOUND)
-        # Forbid Owners from booking its own property
-        if request.user.pk == property_gotten.owner.pk:
-            return Response(status=HTTP_403_FORBIDDEN)
         try:
-            start_date = request.data['start_date']
-            end_date = request.data['end_date']
-            billing_address_string = request.data['billing_address_string']
-            billing_address_city = request.data['billing_address_city']
-            billing_address_country = request.data['billing_address_country']
-            billing_address_province = request.data['billing_address_province']
-            billing_address_postal_code = request.data['billing_address_postal_code']
-            invoice_cost = request.data['invoice_cost']
-            state = request.data['state']
-            #print(start_date)
-            #print(end_date)
-            #conflictings = Booking.objects.filter(Q(end_date__gt=start_date) | Q(start_date__lt=end_date)).count()
-            #print(conflictings)
-            #print(Booking.objects.filter(Q(end_date__gt=start_date) | Q(start_date__lt=end_date)))
-            #if conflictings > 0:
-                #return Response("Conflicting Schedule", status=HTTP_409_CONFLICT)
+            property_gotten = Property.objects.get(pk=pk)
+            if property_gotten is None:
+                return Response(status=HTTP_404_NOT_FOUND)
+            # Forbid Owners from booking its own property
+            if request.user.pk == property_gotten.owner.pk:
+                return Response(status=HTTP_403_FORBIDDEN)
+            try:
+                start_date = request.data['start_date']
+                end_date = request.data['end_date']
+                billing_address_string = request.data['billing_address_string']
+                billing_address_city = request.data['billing_address_city']
+                billing_address_country = request.data['billing_address_country']
+                billing_address_province = request.data['billing_address_province']
+                billing_address_postal_code = request.data['billing_address_postal_code']
+                invoice_cost = request.data['invoice_cost']
+                state = request.data['state']
+                #print(start_date)
+                #print(end_date)
+                #conflictings = Booking.objects.filter(Q(end_date__gt=start_date) | Q(start_date__lt=end_date)).count()
+                #print(conflictings)
+                #print(Booking.objects.filter(Q(end_date__gt=start_date) | Q(start_date__lt=end_date)))
+                #if conflictings > 0:
+                    #return Response("Conflicting Schedule", status=HTTP_409_CONFLICT)
 
-            obj = Booking.objects.create(start_date=start_date,
-                                         end_date=end_date,
-                                         property_booking=property_gotten,
-                                         client=self.request.user,
-                                         billing_address_string=billing_address_string,
-                                         billing_address_city=billing_address_city,
-                                         billing_address_country=billing_address_country,
-                                         billing_address_province=billing_address_province,
-                                         billing_address_postal_code=billing_address_postal_code,
-                                         invoice_cost=invoice_cost,
-                                         state=state
-                                        )
-            
-            booking_ct = ContentType.objects.get_for_model(Booking)
+                obj = Booking.objects.create(start_date=start_date,
+                                             end_date=end_date,
+                                             property_booking=property_gotten,
+                                             client=self.request.user,
+                                             billing_address_string=billing_address_string,
+                                             billing_address_city=billing_address_city,
+                                             billing_address_country=billing_address_country,
+                                             billing_address_province=billing_address_province,
+                                             billing_address_postal_code=billing_address_postal_code,
+                                             invoice_cost=invoice_cost,
+                                             state=state
+                                            )
 
-            user_notif = notifications.objects.create(
-                recipient=request.user,
-                details=f"Booking Submitted for Property: {property_gotten.name}, Pending Review.",
-                notification_type=booking_ct,
-                notification_id=obj.pk
-            )
+                booking_ct = ContentType.objects.get_for_model(Booking)
 
-            owner_notif = notifications.objects.create(
-                recipient=property_gotten.owner,
-                details=f"Somebody Booked Your Property: {property_gotten.name}.",
-                notification_type=booking_ct,
-                notification_id=obj.pk
-            )
+                user_notif = notifications.objects.create(
+                    recipient=request.user,
+                    details=f"Booking Submitted for Property: {property_gotten.name}, Pending Review.",
+                    notification_type=booking_ct,
+                    notification_id=obj.pk
+                )
 
-            serializer = BookingSerializer(obj)
-            # return Response(srlz.data, status=HTTP_201_CREATED)
-            return Response(serializer.data, status=HTTP_201_CREATED)
-        except KeyError:
-            return Response("Missing Fields in Request", status=HTTP_400_BAD_REQUEST)
+                owner_notif = notifications.objects.create(
+                    recipient=property_gotten.owner,
+                    details=f"Somebody Booked Your Property: {property_gotten.name}.",
+                    notification_type=booking_ct,
+                    notification_id=obj.pk
+                )
+
+                serializer = BookingSerializer(obj)
+                # return Response(srlz.data, status=HTTP_201_CREATED)
+                return Response(serializer.data, status=HTTP_201_CREATED)
+            except KeyError:
+                return Response("Missing Fields in Request", status=HTTP_400_BAD_REQUEST)
+
+        except Exception:
+            return Response(status=HTTP_404_NOT_FOUND)
 
     """
     def post(self, request, pk):
@@ -326,31 +362,34 @@ class PropertyBookView(APIView):
     """
 
     def delete(self, request, pk):
-        property_gotten = Property.objects.get(pk=pk)
-        if property_gotten is None:
-            return Response(status=HTTP_404_NOT_FOUND)
-        # print(property_gotten)
         try:
-            if property_gotten.owner != request.user:
-                return Response(status=HTTP_401_UNAUTHORIZED)
-            booking_pk = request.headers.get('to-delete')
-            booking = Booking.objects.get(pk=booking_pk)
-            if booking is None:
+            property_gotten = Property.objects.get(pk=pk)
+            if property_gotten is None:
                 return Response(status=HTTP_404_NOT_FOUND)
-            if booking.property_booking.owner != request.user:
-                return Response(status=HTTP_401_UNAUTHORIZED)
-            booking.delete()
-            booking_ct = ContentType.objects.get_for_model(Booking)
-            user_notif = notifications.objects.create(
-                recipient=booking.client,
-                details=f"The host has cancelled your booking for the property: {property_gotten.name}.",
-                notification_type=booking_ct,
-                notification_id=booking_pk
-            )
+            # print(property_gotten)
+            try:
+                if property_gotten.owner != request.user:
+                    return Response(status=HTTP_401_UNAUTHORIZED)
+                booking_pk = request.headers.get('to-delete')
+                booking = Booking.objects.get(pk=booking_pk)
+                if booking is None:
+                    return Response(status=HTTP_404_NOT_FOUND)
+                if booking.property_booking.owner != request.user:
+                    return Response(status=HTTP_401_UNAUTHORIZED)
+                booking.delete()
+                booking_ct = ContentType.objects.get_for_model(Booking)
+                user_notif = notifications.objects.create(
+                    recipient=booking.client,
+                    details=f"The host has cancelled your booking for the property: {property_gotten.name}.",
+                    notification_type=booking_ct,
+                    notification_id=booking_pk
+                )
 
-            return Response(status=HTTP_200_OK)
-        except KeyError:
-            return Response(status=HTTP_400_BAD_REQUEST)
+                return Response(status=HTTP_200_OK)
+            except KeyError:
+                return Response(status=HTTP_400_BAD_REQUEST)
+            except Exception:
+                return Response(status=HTTP_404_NOT_FOUND)
         except Exception:
             return Response(status=HTTP_404_NOT_FOUND)
 
