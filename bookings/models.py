@@ -62,6 +62,7 @@ class Booking(models.Model):
         ('Denied', 'Denied'),
         ('Expired', 'Expired'),
         ('Approved', 'Approved'),
+        ('RequestCancel', 'RequestCancel'),
         ('Cancelled', 'Cancelled'),
         ('Terminated', 'Terminated'),
         ('Completed', 'Completed'),

@@ -78,8 +78,8 @@ class BookingEditView(APIView):
                     return Response("Bad State", status=HTTP_400_BAD_REQUEST)
 
                 if request.user == currbooking.client:
-                    if state not in dict(Booking.STATES_OPTIONS)['Cancelled']:
-                        return Response("A guest cannot cancel a booking.", status=HTTP_401_UNAUTHORIZED)
+                    if state not in dict(Booking.STATES_OPTIONS)['RequestCancel']:
+                        return Response("A guest can only request cancellation.", status=HTTP_401_UNAUTHORIZED)
 
                 currbooking.start_date = start_date
                 currbooking.end_date = end_date
