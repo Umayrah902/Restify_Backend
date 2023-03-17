@@ -28,11 +28,28 @@ class PropertyPagination(PageNumberPagination):
 class PropertyInfoFetchView(generics.ListAPIView):
     serializer_class = PropertySerializer
     pagination_class = PropertyPagination
-    queryset = Property.objects.all()
-    filter_backends = [filters.DjangoFilterBackend, rest_filters.OrderingFilter, rest_filters.SearchFilter, ]
-    filterset_fields = ['address_city', 'address_province', 'address_country', 'name', 'guest_num', ]
+    # queryset = Property.objects.all()
+    filter_backends = [filters.DjangoFilterBackend, rest_filters.OrderingFilter, rest_filters.SearchFilter ]
+    filterset_fields = ['address_city', 'address_province', 'address_country', 'name', 'guest_num', 'amenities', ]
     search_fields = ['$address', '$name', '$description', ]
     order_fields = ['current_price', 'guest_num']
+
+    def get_queryset(self):
+        """
+        Optionally restricts the returned purchases to a given user,
+        by filtering against a `username` query parameter in the URL.
+        """
+        queryset = Property.objects.all()
+        queryfrom = self.request.query_params.get('from')
+        queryto = self.request.query_params.get('to')
+
+        # print(queryset)
+
+        if queryfrom and queryto:
+            conflicts = queryset.filter(property_book__end_date__gt=queryfrom, property_book__start_date__lt=queryto)
+            queryset = queryset.exclude(id__in=conflicts)
+
+        return queryset
 
 class PropertyInfoFocusView(APIView):
     def get(self, request, pk):
