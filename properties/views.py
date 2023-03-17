@@ -307,7 +307,7 @@ class PropertyBookView(APIView):
                 billing_address_province = request.data['billing_address_province']
                 billing_address_postal_code = request.data['billing_address_postal_code']
                 invoice_cost = request.data['invoice_cost']
-                state = request.data['state']
+                state = "Pending"
                 #print(start_date)
                 #print(end_date)
                 #conflictings = Booking.objects.filter(Q(end_date__gt=start_date) | Q(start_date__lt=end_date)).count()
