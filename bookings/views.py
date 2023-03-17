@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import *
+from django.contrib.contenttypes.models import ContentType
 
 from .models import Booking
 from notifications.models import notifications
@@ -53,10 +54,12 @@ class BookingEditView(APIView):
             currbooking.state = state
             currbooking.save()
 
+            booking_ct = ContentType.objects.get_for_model(Booking)
+
             user_notif = notifications.objects.create(
                 recipient=currbooking.client,
                 details=f"The state of booking No.{currbooking.pk} has changed: {currbooking.state}.",
-                notification_type=Booking,
+                notification_type=booking_ct,
                 notification_id=currbooking.pk
             )
 
