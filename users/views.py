@@ -148,4 +148,14 @@ class GuestPostReviewView(APIView):
 
         else:
             return Response({'error': 'This user has not reserved any of your properties'}, status=status.HTTP_404_NOT_FOUND)
+        
+class ViewProfile(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializerPublicProfile
+
+    def get(self, request, pk):
+        user = CustomUser.objects.get(id=pk)
+        serialized_user = self.serializer_class(user)
+        return Response(serialized_user.data)
+
 
