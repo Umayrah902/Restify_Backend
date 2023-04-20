@@ -21,4 +21,5 @@ urlpatterns = [
     path('editProfile/deleteAvatar/', UserDeleteAvatarView.as_view(), name='user_editProfile_deleteAvatar'),
     path('logout/', TokenBlacklistView.as_view(), name='user_logout'),
     path('viewPublicProfile/<str:email>/', UserViewPublicProfile.as_view(), name='user_publicProfile'),
+    path('viewProfile/<int:pk>/', ViewProfile.as_view(), name='view_profile'),
 ]
