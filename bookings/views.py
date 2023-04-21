@@ -16,7 +16,7 @@ from .serializer import BookingSerializer
 # Create your views here.
 
 class BookingPagination(PageNumberPagination):
-    page_size = 15
+    page_size = 5
 
 class BookingsView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
