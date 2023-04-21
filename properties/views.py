@@ -33,8 +33,8 @@ class PropertyInfoFetchView(generics.ListAPIView):
     pagination_class = PropertyPagination
     # queryset = Property.objects.all()
     filter_backends = [filters.DjangoFilterBackend, rest_filters.OrderingFilter, rest_filters.SearchFilter ]
-    filterset_fields = ['address_city', 'address_province', 'address_country', 'name', 'guest_num', 'amenities', ]
-    search_fields = ['$address', '$name', '$description', ]
+    filterset_fields = ['address_city', 'address_province', 'address_country', 'name', 'guest_num', 'amenities', 'owner' ]
+    search_fields = ['$address_city', '$address_country', '$name', '$description', ]
     order_fields = ['current_price', 'guest_num']
 
     def get_queryset(self):
