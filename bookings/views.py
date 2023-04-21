@@ -16,7 +16,7 @@ from .serializer import BookingSerializer
 # Create your views here.
 
 class BookingPagination(PageNumberPagination):
-    page_size = 15
+    page_size = 5
 
 class BookingsView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
@@ -78,7 +78,7 @@ class BookingEditView(APIView):
                     return Response("Bad State", status=HTTP_400_BAD_REQUEST)
 
                 if request.user == currbooking.client:
-                    if state != dict(Booking.STATES_OPTIONS)['RequestCancel']:
+                    if not(state == dict(Booking.STATES_OPTIONS)['RequestCancel'] or (state == "Cancelled" and currbooking.state == "Pending")):
                         return Response("A guest can only request cancellation.", status=HTTP_401_UNAUTHORIZED)
 
                 currbooking.start_date = start_date

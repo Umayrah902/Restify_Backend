@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import UserSignupView, UserEditProfileView, UserViewMyProfile, UserDeleteAvatarView, UserViewPublicProfile, ViewGuestsView, GuestsReviewsView, GuestPostReviewView
+from .views import UserSignupView, UserEditProfileView, UserViewMyProfile, UserDeleteAvatarView, UserViewPublicProfile, ViewGuestsView, GuestsReviewsView, GuestPostReviewView, ViewProfile
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -21,4 +21,5 @@ urlpatterns = [
     path('editProfile/deleteAvatar/', UserDeleteAvatarView.as_view(), name='user_editProfile_deleteAvatar'),
     path('logout/', TokenBlacklistView.as_view(), name='user_logout'),
     path('viewPublicProfile/<str:email>/', UserViewPublicProfile.as_view(), name='user_publicProfile'),
+    path('viewProfile/<int:pk>/', ViewProfile.as_view(), name='view_profile'),
 ]
