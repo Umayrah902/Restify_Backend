@@ -9,7 +9,7 @@ from .serializer import UserSerializer, UserSerializerProfile, UserSerializerPub
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.hashers import make_password
 from .models import CustomUser
-
+from rest_framework.pagination import PageNumberPagination
 
 class UserSignupView(APIView):
     def post(self, request):
@@ -108,7 +108,13 @@ class GuestsReviewsView(APIView):
         if pk in user_ids:
             user_ct = ContentType.objects.get_for_model(CustomUser)
             comments = Comment.objects.filter(Q(comment_type=user_ct, comment_id=pk))
-            return Response(self.serializer_class(comments, many=True).data, status=status.HTTP_200_OK)
+            
+            paginator = PageNumberPagination()
+            paginator.page_size = 5
+            paginated_comments = paginator.paginate_queryset(comments, request)
+            serializer = GuestReviewsSerializer(paginated_comments, many=True)
+
+            return paginator.get_paginated_response(serializer.data)
         else:
             return Response({'error': 'This user has not reserved any of your properties'}, status=status.HTTP_404_NOT_FOUND)
 
