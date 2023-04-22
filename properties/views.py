@@ -147,8 +147,8 @@ class PropertyPricesManageView(APIView):
                 end_date = request.data['end_date']
                 price = request.data['pricing']
                 conflictings = Date_Price_Properties.objects.filter(end_date__gt=start_date, start_date__lt=end_date).count()
-                if conflictings > 0:
-                    return Response("Conflicting Schedule", status=HTTP_409_CONFLICT)
+                # if conflictings > 0:
+                    # return Response("Conflicting Schedule", status=HTTP_409_CONFLICT)
 
                 obj = Date_Price_Properties.objects.create(start_date=start_date,
                                                 end_date=end_date,
